@@ -9,6 +9,9 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "test": "turbo test",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
     "clean": "turbo clean && rm -rf node_modules"
   },
   "devDependencies": {
