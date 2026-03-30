@@ -11,7 +11,9 @@
   "sidebar": {
     "conversations": "Conversations",
     "noConversations": "No conversations yet",
-    "deleteConversation": "Delete conversation"
+    "deleteConversation": "Delete conversation",
+    "search": "Search conversations...",
+    "noResults": "No conversations found"
   },
   "chat": {
     "area": "Chat area",
@@ -44,5 +46,13 @@
     "systemPromptHint": "This prompt will be included with every message to guide the AI's behavior.",
     "save": "Save",
     "reset": "Reset"
+  },
+  "shortcuts": {
+    "title": "Keyboard Shortcuts",
+    "newChat": "New chat",
+    "search": "Search conversations",
+    "toggleSidebar": "Toggle sidebar",
+    "settings": "Open settings",
+    "showHelp": "Show this help"
   }
 }

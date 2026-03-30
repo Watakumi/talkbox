@@ -4,15 +4,18 @@ import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/sidebar/Sidebar';
 import { ChatArea } from '@/components/chat/ChatArea';
 import { SettingsModal } from '@/components/settings/SettingsModal';
+import { KeyboardShortcutsModal } from '@/components/help/KeyboardShortcutsModal';
 import { useConversationsStore } from '@/stores/conversations';
 import { useChatStore } from '@/stores/chat';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useKeyboardShortcuts, SHORTCUT_KEYS } from '@/hooks/useKeyboardShortcuts';
 import { exportConversation, type ExportFormat } from '@/utils/export';
 
 export function App() {
   const { t } = useTranslation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   const { conversations, currentId, selectConversation } = useConversationsStore();
@@ -65,6 +68,46 @@ export function App() {
     setIsSettingsOpen(false);
   }, []);
 
+  const handleOpenShortcuts = useCallback(() => {
+    setIsShortcutsOpen(true);
+  }, []);
+
+  const handleCloseShortcuts = useCallback(() => {
+    setIsShortcutsOpen(false);
+  }, []);
+
+  const handleFocusSearch = useCallback(() => {
+    if (!isDesktop && !isSidebarOpen) {
+      setIsSidebarOpen(true);
+    }
+    // Focus will be handled by Sidebar via ref callback
+    setTimeout(() => {
+      const searchInput = document.querySelector<HTMLInputElement>(
+        '[aria-label="' + t('sidebar.search') + '"]'
+      );
+      searchInput?.focus();
+    }, 100);
+  }, [isDesktop, isSidebarOpen, t]);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    shortcuts: [
+      { ...SHORTCUT_KEYS.newChat, handler: handleNewChat },
+      { ...SHORTCUT_KEYS.search, handler: handleFocusSearch },
+      { ...SHORTCUT_KEYS.toggleSidebar, handler: handleMenuClick },
+      { ...SHORTCUT_KEYS.settings, handler: handleOpenSettings },
+      { ...SHORTCUT_KEYS.help, handler: handleOpenShortcuts },
+      {
+        ...SHORTCUT_KEYS.escape,
+        handler: () => {
+          if (isShortcutsOpen) setIsShortcutsOpen(false);
+          else if (isSettingsOpen) setIsSettingsOpen(false);
+          else if (isSidebarOpen && !isDesktop) setIsSidebarOpen(false);
+        },
+      },
+    ],
+  });
+
   return (
     <div className="flex h-full flex-col">
       {/* Skip to main content link for accessibility */}
@@ -93,6 +136,7 @@ export function App() {
       </div>
 
       <SettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
+      <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={handleCloseShortcuts} />
     </div>
   );
 }

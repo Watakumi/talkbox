@@ -11,7 +11,9 @@
   "sidebar": {
     "conversations": "会話一覧",
     "noConversations": "会話がありません",
-    "deleteConversation": "会話を削除"
+    "deleteConversation": "会話を削除",
+    "search": "会話を検索...",
+    "noResults": "会話が見つかりません"
   },
   "chat": {
     "area": "チャットエリア",
@@ -44,5 +46,13 @@
     "systemPromptHint": "このプロンプトは全てのメッセージに含まれ、AIの動作を制御します。",
     "save": "保存",
     "reset": "リセット"
+  },
+  "shortcuts": {
+    "title": "キーボードショートカット",
+    "newChat": "新しいチャット",
+    "search": "会話を検索",
+    "toggleSidebar": "サイドバーを切り替え",
+    "settings": "設定を開く",
+    "showHelp": "このヘルプを表示"
   }
 }

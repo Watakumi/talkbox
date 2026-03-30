@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Transition } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 import { useConversationsStore } from '@/stores/conversations';
 import { useChatStore } from '@/stores/chat';
@@ -15,6 +15,7 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose, onSelectConversation }: SidebarProps) {
   const { t } = useTranslation();
+  const [searchQuery, setSearchQuery] = useState('');
   const {
     conversations,
     currentId,
@@ -27,6 +28,16 @@ export function Sidebar({ isOpen, onClose, onSelectConversation }: SidebarProps)
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
+
+  const filteredConversations = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return conversations;
+    }
+    const query = searchQuery.toLowerCase();
+    return conversations.filter((c) =>
+      c.title.toLowerCase().includes(query)
+    );
+  }, [conversations, searchQuery]);
 
   const handleSelect = (id: string) => {
     selectConversation(id);
@@ -80,15 +91,37 @@ export function Sidebar({ isOpen, onClose, onSelectConversation }: SidebarProps)
           </button>
         </div>
 
+        {/* Search input */}
+        <div className="shrink-0 border-b border-border p-2">
+          <div className="relative">
+            <MagnifyingGlassIcon
+              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+              aria-hidden="true"
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('sidebar.search')}
+              className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              aria-label={t('sidebar.search')}
+            />
+          </div>
+        </div>
+
         {/* Conversation list */}
         <nav className="flex-1 overflow-y-auto p-2 scrollbar-thin">
           {conversations.length === 0 ? (
             <p className="px-3 py-8 text-center text-sm text-gray-500">
               {t('sidebar.noConversations')}
             </p>
+          ) : filteredConversations.length === 0 ? (
+            <p className="px-3 py-8 text-center text-sm text-gray-500">
+              {t('sidebar.noResults')}
+            </p>
           ) : (
             <ul role="list" className="space-y-1">
-              {conversations.map((conversation) => (
+              {filteredConversations.map((conversation) => (
                 <li key={conversation.id}>
                   <ConversationItem
                     conversation={conversation}
