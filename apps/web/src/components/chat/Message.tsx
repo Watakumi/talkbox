@@ -1,10 +1,12 @@
 import { useState, useCallback, type ComponentPropsWithoutRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { UserIcon, SparklesIcon, ClipboardIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
+import { MermaidDiagram } from './MermaidDiagram';
 import type { MessageRole } from '@talkbox/shared';
 
 interface MessageProps {
@@ -27,9 +29,20 @@ function CodeBlock({ language, children }: CodeBlockProps) {
     setTimeout(() => setCopied(false), 2000);
   }, [children]);
 
+  // Handle Mermaid diagrams
+  if (language === 'mermaid') {
+    return <MermaidDiagram chart={children} />;
+  }
+
   return (
-    <div className="group relative">
-      <div className="absolute right-2 top-2 z-10">
+    <div className="group relative my-4">
+      {/* Language badge and copy button */}
+      <div className="absolute right-2 top-2 z-10 flex items-center gap-2">
+        {language && (
+          <span className="rounded bg-gray-600 px-2 py-0.5 text-xs text-gray-300">
+            {language}
+          </span>
+        )}
         <button
           onClick={handleCopy}
           className="rounded bg-gray-700 p-1.5 text-gray-300 opacity-0 transition-opacity hover:bg-gray-600 hover:text-white group-hover:opacity-100"
@@ -46,11 +59,57 @@ function CodeBlock({ language, children }: CodeBlockProps) {
         style={oneDark}
         language={language}
         PreTag="div"
-        customStyle={{ margin: 0, borderRadius: '0.5rem', fontSize: '0.875rem' }}
+        customStyle={{ margin: 0, borderRadius: '0.5rem', fontSize: '0.875rem', paddingTop: '2.5rem' }}
       >
         {children}
       </SyntaxHighlighter>
     </div>
+  );
+}
+
+// Custom table component with nice styling
+function Table({ children, ...props }: ComponentPropsWithoutRef<'table'>) {
+  return (
+    <div className="my-4 overflow-x-auto rounded-lg border border-gray-200">
+      <table className="min-w-full divide-y divide-gray-200" {...props}>
+        {children}
+      </table>
+    </div>
+  );
+}
+
+function TableHead({ children, ...props }: ComponentPropsWithoutRef<'thead'>) {
+  return (
+    <thead className="bg-gray-50" {...props}>
+      {children}
+    </thead>
+  );
+}
+
+function TableRow({ children, ...props }: ComponentPropsWithoutRef<'tr'>) {
+  return (
+    <tr className="hover:bg-gray-50" {...props}>
+      {children}
+    </tr>
+  );
+}
+
+function TableHeader({ children, ...props }: ComponentPropsWithoutRef<'th'>) {
+  return (
+    <th
+      className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600"
+      {...props}
+    >
+      {children}
+    </th>
+  );
+}
+
+function TableCell({ children, ...props }: ComponentPropsWithoutRef<'td'>) {
+  return (
+    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700" {...props}>
+      {children}
+    </td>
   );
 }
 
@@ -86,8 +145,9 @@ export function Message({ role, content }: MessageProps) {
         </div>
         <div className="min-w-0 flex-1 text-sm leading-relaxed text-gray-900">
           {content ? (
-            <div className="prose prose-sm max-w-none prose-p:my-2 prose-pre:m-0 prose-pre:bg-transparent prose-pre:p-0">
+            <div className="prose prose-sm max-w-none prose-p:my-2 prose-pre:m-0 prose-pre:bg-transparent prose-pre:p-0 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5">
               <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
                 components={{
                   code: ({ className, children, ...props }: ComponentPropsWithoutRef<'code'>) => {
                     const match = /language-(\w+)/.exec(className || '');
@@ -98,11 +158,42 @@ export function Message({ role, content }: MessageProps) {
                     }
 
                     return (
-                      <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm" {...props}>
+                      <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm font-mono text-pink-600" {...props}>
                         {children}
                       </code>
                     );
                   },
+                  // Enhanced table components
+                  table: Table,
+                  thead: TableHead,
+                  tr: TableRow,
+                  th: TableHeader,
+                  td: TableCell,
+                  // Enhanced blockquote
+                  blockquote: ({ children, ...props }) => (
+                    <blockquote
+                      className="my-4 border-l-4 border-primary-500 bg-primary-50 py-2 pl-4 pr-2 italic text-gray-700"
+                      {...props}
+                    >
+                      {children}
+                    </blockquote>
+                  ),
+                  // Enhanced horizontal rule
+                  hr: (props) => (
+                    <hr className="my-6 border-t-2 border-gray-200" {...props} />
+                  ),
+                  // Enhanced links
+                  a: ({ children, href, ...props }) => (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary-600 underline hover:text-primary-700"
+                      {...props}
+                    >
+                      {children}
+                    </a>
+                  ),
                 }}
               >
                 {content}

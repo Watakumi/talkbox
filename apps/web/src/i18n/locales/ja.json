@@ -35,7 +35,9 @@
     "cancel": "キャンセル",
     "confirm": "確認",
     "error": "エラーが発生しました",
-    "skipToContent": "メインコンテンツへスキップ"
+    "skipToContent": "メインコンテンツへスキップ",
+    "expand": "展開",
+    "collapse": "折りたたむ"
   },
   "settings": {
     "title": "設定",

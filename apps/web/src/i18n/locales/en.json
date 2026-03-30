@@ -35,7 +35,9 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "error": "An error occurred",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "expand": "Expand",
+    "collapse": "Collapse"
   },
   "settings": {
     "title": "Settings",
