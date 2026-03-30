@@ -1,16 +1,17 @@
 import { useState, useCallback, type FormEvent, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
+import { PaperAirplaneIcon, StopIcon } from '@heroicons/react/24/solid';
 import { clsx } from 'clsx';
 import { Button } from '@/components/common/Button';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
+  onStop?: () => void;
   isLoading: boolean;
   maxLength?: number;
 }
 
-export function ChatInput({ onSend, isLoading, maxLength = 4000 }: ChatInputProps) {
+export function ChatInput({ onSend, onStop, isLoading, maxLength = 4000 }: ChatInputProps) {
   const { t } = useTranslation();
   const [message, setMessage] = useState('');
 
@@ -63,16 +64,28 @@ export function ChatInput({ onSend, isLoading, maxLength = 4000 }: ChatInputProp
             aria-invalid={isOverLimit || undefined}
             aria-describedby={isOverLimit ? 'char-limit-error' : undefined}
           />
-          <Button
-            type="submit"
-            size="sm"
-            disabled={!canSubmit}
-            isLoading={isLoading}
-            className="absolute bottom-2 right-2"
-            aria-label={t('chat.send')}
-          >
-            <PaperAirplaneIcon className="h-4 w-4" aria-hidden="true" />
-          </Button>
+          {isLoading ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={onStop}
+              className="absolute bottom-2 right-2"
+              aria-label={t('chat.stop')}
+            >
+              <StopIcon className="h-4 w-4" aria-hidden="true" />
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              size="sm"
+              disabled={!canSubmit}
+              className="absolute bottom-2 right-2"
+              aria-label={t('chat.send')}
+            >
+              <PaperAirplaneIcon className="h-4 w-4" aria-hidden="true" />
+            </Button>
+          )}
         </div>
 
         {isOverLimit && (

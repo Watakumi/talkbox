@@ -17,7 +17,10 @@
     "welcomeSubtitle": "Start a conversation by typing a message below",
     "placeholder": "Type a message...",
     "send": "Send",
+    "stop": "Stop",
     "loading": "Thinking...",
+    "copied": "Copied!",
+    "copy": "Copy message",
     "characterLimit": "{{current}}/{{max}} characters",
     "userMessage": "Your message",
     "assistantMessage": "Assistant message"

@@ -8,7 +8,7 @@ import { ChatInput } from './ChatInput';
 export function ChatArea() {
   const { t } = useTranslation();
   const { currentId, createConversation } = useConversationsStore();
-  const { messages, isStreaming, loadMessages, sendMessage, clearMessages } = useChatStore();
+  const { messages, isStreaming, loadMessages, sendMessage, stopStreaming, clearMessages } = useChatStore();
   const lastLoadedId = useRef<string | null>(null);
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export function ChatArea() {
       aria-label={t('chat.area')}
     >
       <MessageList messages={messages} isLoading={isStreaming} />
-      <ChatInput onSend={handleSend} isLoading={isStreaming} />
+      <ChatInput onSend={handleSend} onStop={stopStreaming} isLoading={isStreaming} />
     </main>
   );
 }

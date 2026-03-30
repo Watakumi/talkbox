@@ -17,7 +17,10 @@
     "welcomeSubtitle": "下にメッセージを入力して会話を始めましょう",
     "placeholder": "メッセージを入力...",
     "send": "送信",
+    "stop": "停止",
     "loading": "考え中...",
+    "copied": "コピーしました",
+    "copy": "メッセージをコピー",
     "characterLimit": "{{current}}/{{max}}文字",
     "userMessage": "あなたのメッセージ",
     "assistantMessage": "アシスタントのメッセージ"

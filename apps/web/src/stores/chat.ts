@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import type { Message } from '@talkbox/shared';
 import { api } from '@/services/api';
 
+let abortController: AbortController | null = null;
+
 interface ChatState {
   messages: Message[];
   isStreaming: boolean;
@@ -9,6 +11,7 @@ interface ChatState {
 
   loadMessages: (conversationId: string) => Promise<void>;
   sendMessage: (conversationId: string, content: string) => Promise<void>;
+  stopStreaming: () => void;
   clearMessages: () => void;
 }
 
@@ -34,6 +37,8 @@ export const useChatStore = create<ChatState>((set) => ({
       createdAt: new Date().toISOString(),
     };
 
+    abortController = new AbortController();
+
     set((state) => ({
       messages: [...state.messages, userMessage],
       isStreaming: true,
@@ -44,7 +49,7 @@ export const useChatStore = create<ChatState>((set) => ({
     let fullContent = '';
 
     try {
-      for await (const event of api.chat.send(conversationId, content)) {
+      for await (const event of api.chat.send(conversationId, content, abortController.signal)) {
         switch (event.type) {
           case 'start':
             assistantMessageId = event.messageId;
@@ -82,11 +87,25 @@ export const useChatStore = create<ChatState>((set) => ({
         }
       }
     } catch (error) {
-      set({
-        isStreaming: false,
-        error: error instanceof Error ? error.message : 'Failed to send',
-      });
+      if (error instanceof Error && error.name === 'AbortError') {
+        set({ isStreaming: false });
+      } else {
+        set({
+          isStreaming: false,
+          error: error instanceof Error ? error.message : 'Failed to send',
+        });
+      }
+    } finally {
+      abortController = null;
     }
+  },
+
+  stopStreaming: () => {
+    if (abortController) {
+      abortController.abort();
+      abortController = null;
+    }
+    set({ isStreaming: false });
   },
 
   clearMessages: () => {

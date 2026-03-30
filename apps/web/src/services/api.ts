@@ -49,12 +49,14 @@ export const api = {
   chat: {
     send: async function* (
       conversationId: string,
-      message: string
+      message: string,
+      signal?: AbortSignal
     ): AsyncGenerator<ChatEvent, void, unknown> {
       const response = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ conversationId, message }),
+        signal,
       });
 
       if (!response.ok || !response.body) {
@@ -65,22 +67,26 @@ export const api = {
       const decoder = new TextDecoder();
       let buffer = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data) {
-              yield JSON.parse(data) as ChatEvent;
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data) {
+                yield JSON.parse(data) as ChatEvent;
+              }
             }
           }
         }
+      } finally {
+        reader.releaseLock();
       }
     },
   },
