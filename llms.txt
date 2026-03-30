@@ -1,0 +1,63 @@
+# TalkBox
+
+> OSS LLM Chat UI - Simple like Streamlit, powerful like ChatGPT
+
+## Overview
+
+TalkBox is an open-source chat interface for Large Language Models. It provides a modern, accessible, and multilingual chat experience.
+
+## Tech Stack
+
+- Frontend: React 18, TypeScript, Tailwind CSS, Headless UI, Vite
+- Backend: Hono (TypeScript), Drizzle ORM
+- Database: MySQL/MariaDB
+- State: Zustand
+- i18n: react-i18next (Japanese/English)
+
+## Project Structure
+
+```
+talkbox/
+├── apps/
+│   ├── api/              # Hono backend API
+│   │   ├── src/
+│   │   │   ├── routes/   # API endpoints
+│   │   │   ├── services/ # LLM providers
+│   │   │   └── db/       # Database schema
+│   └── web/              # React frontend
+│       ├── src/
+│       │   ├── components/  # UI components
+│       │   ├── stores/      # Zustand stores
+│       │   ├── hooks/       # Custom hooks
+│       │   └── i18n/        # Translations
+├── packages/
+│   └── shared/           # Shared types
+└── docker/               # Docker configs
+```
+
+## Key Files
+
+- `apps/web/src/App.tsx` - Main app component with routing
+- `apps/web/src/stores/chat.ts` - Chat state management
+- `apps/web/src/stores/conversations.ts` - Conversation list state
+- `apps/api/src/index.ts` - API entry point
+- `apps/api/src/routes/chat.ts` - Chat streaming endpoint
+- `apps/api/src/services/llm/` - LLM provider abstraction
+
+## Conventions
+
+- Immutable state updates (Zustand)
+- Functional components with hooks
+- Tailwind CSS for styling
+- i18n keys in `apps/web/src/i18n/locales/`
+- API routes prefixed with `/api/v1/`
+
+## Commands
+
+- `pnpm dev` - Start development servers
+- `pnpm build` - Production build
+- `pnpm lint` - Run linters
+
+## License
+
+MIT
