@@ -1,15 +1,25 @@
 import { useTranslation } from 'react-i18next';
 import { Menu } from '@headlessui/react';
-import { Bars3Icon, LanguageIcon, PlusIcon } from '@heroicons/react/24/outline';
+import {
+  Bars3Icon,
+  LanguageIcon,
+  PlusIcon,
+  ArrowDownTrayIcon,
+  Cog6ToothIcon,
+} from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 import { Button } from '../common/Button';
+import type { ExportFormat } from '@/utils/export';
 
 interface HeaderProps {
   onMenuClick: () => void;
   onNewChat: () => void;
+  onExport?: (format: ExportFormat) => void;
+  canExport?: boolean;
+  onSettings?: () => void;
 }
 
-export function Header({ onMenuClick, onNewChat }: HeaderProps) {
+export function Header({ onMenuClick, onNewChat, onExport, canExport, onSettings }: HeaderProps) {
   const { t, i18n } = useTranslation();
 
   const changeLanguage = (lang: string) => {
@@ -33,6 +43,16 @@ export function Header({ onMenuClick, onNewChat }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
+        {onSettings && (
+          <button
+            onClick={onSettings}
+            className="rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+            aria-label={t('settings.title')}
+          >
+            <Cog6ToothIcon className="h-5 w-5" aria-hidden="true" />
+          </button>
+        )}
+
         <Menu as="div" className="relative">
           <Menu.Button
             className="rounded-lg p-2 text-gray-600 hover:bg-gray-100"
@@ -69,6 +89,45 @@ export function Header({ onMenuClick, onNewChat }: HeaderProps) {
             </Menu.Item>
           </Menu.Items>
         </Menu>
+
+        {canExport && onExport && (
+          <Menu as="div" className="relative">
+            <Menu.Button
+              className="rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+              aria-label={t('header.export')}
+            >
+              <ArrowDownTrayIcon className="h-5 w-5" aria-hidden="true" />
+            </Menu.Button>
+            <Menu.Items className="absolute right-0 z-10 mt-1 w-40 origin-top-right rounded-lg border border-border bg-surface p-1 shadow-lg focus:outline-none">
+              <Menu.Item>
+                {({ active }) => (
+                  <button
+                    onClick={() => onExport('json')}
+                    className={clsx(
+                      'flex w-full items-center rounded px-3 py-2 text-left text-sm',
+                      active && 'bg-surface-tertiary'
+                    )}
+                  >
+                    {t('header.exportJson')}
+                  </button>
+                )}
+              </Menu.Item>
+              <Menu.Item>
+                {({ active }) => (
+                  <button
+                    onClick={() => onExport('markdown')}
+                    className={clsx(
+                      'flex w-full items-center rounded px-3 py-2 text-left text-sm',
+                      active && 'bg-surface-tertiary'
+                    )}
+                  >
+                    {t('header.exportMarkdown')}
+                  </button>
+                )}
+              </Menu.Item>
+            </Menu.Items>
+          </Menu>
+        )}
 
         <Button
           onClick={onNewChat}

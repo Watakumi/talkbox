@@ -5,6 +5,10 @@ export interface LLMMessage {
   content: string;
 }
 
+export interface LLMChatOptions {
+  systemPrompt?: string;
+}
+
 export interface LLMProvider {
-  chat(messages: LLMMessage[]): AsyncGenerator<string, void, unknown>;
+  chat(messages: LLMMessage[], options?: LLMChatOptions): AsyncGenerator<string, void, unknown>;
 }

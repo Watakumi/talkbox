@@ -3,6 +3,7 @@ import type {
   ConversationWithMessages,
   ConversationsResponse,
   ChatEvent,
+  LLMProviderType,
 } from '@talkbox/shared';
 
 const API_BASE = '/api/v1';
@@ -50,13 +51,18 @@ export const api = {
     send: async function* (
       conversationId: string,
       message: string,
-      signal?: AbortSignal
+      options?: { signal?: AbortSignal; systemPrompt?: string; model?: LLMProviderType }
     ): AsyncGenerator<ChatEvent, void, unknown> {
       const response = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conversationId, message }),
-        signal,
+        body: JSON.stringify({
+          conversationId,
+          message,
+          systemPrompt: options?.systemPrompt,
+          model: options?.model,
+        }),
+        signal: options?.signal,
       });
 
       if (!response.ok || !response.body) {

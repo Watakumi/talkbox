@@ -1,12 +1,12 @@
 import { GoogleGenAI } from '@google/genai';
-import type { LLMMessage, LLMProvider } from './types.js';
+import type { LLMMessage, LLMProvider, LLMChatOptions } from './types.js';
 
 export function createGeminiProvider(apiKey: string): LLMProvider {
   const ai = new GoogleGenAI({ apiKey });
   const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
   return {
-    async *chat(messages: LLMMessage[]): AsyncGenerator<string, void, unknown> {
+    async *chat(messages: LLMMessage[], options?: LLMChatOptions): AsyncGenerator<string, void, unknown> {
       const history = messages.slice(0, -1).map((msg) => ({
         role: msg.role === 'user' ? 'user' : 'model',
         parts: [{ text: msg.content }],
@@ -20,6 +20,9 @@ export function createGeminiProvider(apiKey: string): LLMProvider {
       const chat = ai.chats.create({
         model: modelName,
         history,
+        config: options?.systemPrompt
+          ? { systemInstruction: options.systemPrompt }
+          : undefined,
       });
 
       const stream = await chat.sendMessageStream({

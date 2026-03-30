@@ -3,17 +3,23 @@ import { useTranslation } from 'react-i18next';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/sidebar/Sidebar';
 import { ChatArea } from '@/components/chat/ChatArea';
+import { SettingsModal } from '@/components/settings/SettingsModal';
 import { useConversationsStore } from '@/stores/conversations';
 import { useChatStore } from '@/stores/chat';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { exportConversation, type ExportFormat } from '@/utils/export';
 
 export function App() {
   const { t } = useTranslation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const isDesktop = useMediaQuery('(min-width: 1024px)');
 
-  const { selectConversation } = useConversationsStore();
-  const { clearMessages } = useChatStore();
+  const { conversations, currentId, selectConversation } = useConversationsStore();
+  const { messages, clearMessages } = useChatStore();
+
+  const currentConversation = conversations.find((c) => c.id === currentId);
+  const canExport = !!currentConversation && messages.length > 0;
 
   const handleMenuClick = useCallback(() => {
     setIsSidebarOpen((prev) => !prev);
@@ -37,6 +43,28 @@ export function App() {
     }
   }, [selectConversation, clearMessages, isDesktop]);
 
+  const handleExport = useCallback(
+    (format: ExportFormat) => {
+      if (!currentConversation) return;
+      exportConversation(
+        {
+          conversation: currentConversation,
+          messages,
+        },
+        format
+      );
+    },
+    [currentConversation, messages]
+  );
+
+  const handleOpenSettings = useCallback(() => {
+    setIsSettingsOpen(true);
+  }, []);
+
+  const handleCloseSettings = useCallback(() => {
+    setIsSettingsOpen(false);
+  }, []);
+
   return (
     <div className="flex h-full flex-col">
       {/* Skip to main content link for accessibility */}
@@ -47,7 +75,13 @@ export function App() {
         {t('common.skipToContent')}
       </a>
 
-      <Header onMenuClick={handleMenuClick} onNewChat={handleNewChat} />
+      <Header
+        onMenuClick={handleMenuClick}
+        onNewChat={handleNewChat}
+        onExport={handleExport}
+        canExport={canExport}
+        onSettings={handleOpenSettings}
+      />
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -57,6 +91,8 @@ export function App() {
         />
         <ChatArea />
       </div>
+
+      <SettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
     </div>
   );
 }

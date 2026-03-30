@@ -3,7 +3,10 @@
     "title": "TalkBox",
     "newChat": "New Chat",
     "toggleSidebar": "Toggle sidebar",
-    "changeLanguage": "Change language"
+    "changeLanguage": "Change language",
+    "export": "Export conversation",
+    "exportJson": "Export as JSON",
+    "exportMarkdown": "Export as Markdown"
   },
   "sidebar": {
     "conversations": "Conversations",
@@ -31,5 +34,15 @@
     "confirm": "Confirm",
     "error": "An error occurred",
     "skipToContent": "Skip to content"
+  },
+  "settings": {
+    "title": "Settings",
+    "model": "AI Model",
+    "modelHint": "Select the AI model to use for conversations. Requires API key configuration.",
+    "systemPrompt": "System Prompt",
+    "systemPromptPlaceholder": "Enter instructions for the AI assistant...",
+    "systemPromptHint": "This prompt will be included with every message to guide the AI's behavior.",
+    "save": "Save",
+    "reset": "Reset"
   }
 }

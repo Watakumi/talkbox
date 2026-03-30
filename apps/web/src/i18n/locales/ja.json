@@ -3,7 +3,10 @@
     "title": "TalkBox",
     "newChat": "新しいチャット",
     "toggleSidebar": "サイドバーを切り替え",
-    "changeLanguage": "言語を変更"
+    "changeLanguage": "言語を変更",
+    "export": "会話をエクスポート",
+    "exportJson": "JSONでエクスポート",
+    "exportMarkdown": "Markdownでエクスポート"
   },
   "sidebar": {
     "conversations": "会話一覧",
@@ -31,5 +34,15 @@
     "confirm": "確認",
     "error": "エラーが発生しました",
     "skipToContent": "メインコンテンツへスキップ"
+  },
+  "settings": {
+    "title": "設定",
+    "model": "AIモデル",
+    "modelHint": "会話に使用するAIモデルを選択します。APIキーの設定が必要です。",
+    "systemPrompt": "システムプロンプト",
+    "systemPromptPlaceholder": "AIアシスタントへの指示を入力...",
+    "systemPromptHint": "このプロンプトは全てのメッセージに含まれ、AIの動作を制御します。",
+    "save": "保存",
+    "reset": "リセット"
   }
 }

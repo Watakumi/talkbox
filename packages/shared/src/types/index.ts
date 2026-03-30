@@ -37,9 +37,13 @@ export interface UpdateConversationRequest {
   title: string;
 }
 
+export type LLMProviderType = 'gemini' | 'openai' | 'anthropic';
+
 export interface ChatRequest {
   conversationId: string;
   message: string;
+  systemPrompt?: string;
+  model?: LLMProviderType;
 }
 
 export interface ConversationsResponse {

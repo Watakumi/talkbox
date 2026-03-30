@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Message } from '@talkbox/shared';
 import { api } from '@/services/api';
+import { useSettingsStore } from './settings';
 
 let abortController: AbortController | null = null;
 
@@ -49,7 +50,12 @@ export const useChatStore = create<ChatState>((set) => ({
     let fullContent = '';
 
     try {
-      for await (const event of api.chat.send(conversationId, content, abortController.signal)) {
+      const { systemPrompt, model } = useSettingsStore.getState();
+      for await (const event of api.chat.send(conversationId, content, {
+        signal: abortController.signal,
+        systemPrompt: systemPrompt || undefined,
+        model,
+      })) {
         switch (event.type) {
           case 'start':
             assistantMessageId = event.messageId;

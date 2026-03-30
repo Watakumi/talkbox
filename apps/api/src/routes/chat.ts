@@ -11,6 +11,8 @@ import type { ChatEvent } from '@talkbox/shared';
 const chatSchema = z.object({
   conversationId: z.string().uuid(),
   message: z.string().min(1).max(10000),
+  systemPrompt: z.string().max(5000).optional(),
+  model: z.enum(['gemini', 'openai', 'anthropic']).optional(),
 });
 
 export const chatRoutes = new Hono<Env>().post(
@@ -18,7 +20,7 @@ export const chatRoutes = new Hono<Env>().post(
   zValidator('json', chatSchema),
   async (c) => {
     const user = c.get('user');
-    const { conversationId, message } = c.req.valid('json');
+    const { conversationId, message, systemPrompt, model } = c.req.valid('json');
     const db = await getDb();
 
     // 会話の所有者確認
@@ -59,11 +61,11 @@ export const chatRoutes = new Hono<Env>().post(
       const startEvent: ChatEvent = { type: 'start', messageId: assistantMessageId };
       await stream.writeSSE({ data: JSON.stringify(startEvent) });
 
-      const llm = createLLMProvider('gemini');
+      const llm = createLLMProvider(model || 'gemini');
       let fullContent = '';
 
       try {
-        for await (const chunk of llm.chat(llmMessages)) {
+        for await (const chunk of llm.chat(llmMessages, { systemPrompt })) {
           fullContent += chunk;
           const chunkEvent: ChatEvent = { type: 'chunk', content: chunk };
           await stream.writeSSE({ data: JSON.stringify(chunkEvent) });
