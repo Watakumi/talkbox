@@ -88,9 +88,13 @@ export const chatRoutes = new Hono<Env>().post(
         const doneEvent: ChatEvent = { type: 'done' };
         await stream.writeSSE({ data: JSON.stringify(doneEvent) });
       } catch (error) {
+        // Log detailed error server-side only
+        console.error('LLM stream error:', error);
+
+        // Return safe error message to client (never expose internal details)
         const errorEvent: ChatEvent = {
           type: 'error',
-          message: error instanceof Error ? error.message : 'Unknown error',
+          message: 'An error occurred while generating a response. Please try again.',
         };
         await stream.writeSSE({ data: JSON.stringify(errorEvent) });
       }

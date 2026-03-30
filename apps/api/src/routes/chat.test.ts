@@ -243,7 +243,8 @@ describe('chatRoutes', () => {
       expect(res.status).toBe(200);
       const text = await res.text();
       expect(text).toContain('"type":"error"');
-      expect(text).toContain('LLM API Error');
+      // Error message should be sanitized (not expose internal error details)
+      expect(text).toContain('An error occurred while generating a response');
     });
 
     it('should use specified model', async () => {
