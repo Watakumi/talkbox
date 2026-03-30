@@ -42,7 +42,13 @@ export function ChatInput({ onSend, onStop, isLoading, maxLength = 4000 }: ChatI
   return (
     <form onSubmit={handleSubmit} className="border-t border-border bg-surface p-4">
       <div className="mx-auto max-w-3xl">
-        <div className="relative">
+        <div
+          className={clsx(
+            'flex items-center gap-2 rounded-xl border bg-surface px-3 transition-colors',
+            'focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2',
+            isOverLimit ? 'border-red-500' : 'border-border'
+          )}
+        >
           <label htmlFor="chat-input" className="sr-only">
             {t('chat.placeholder')}
           </label>
@@ -55,10 +61,9 @@ export function ChatInput({ onSend, onStop, isLoading, maxLength = 4000 }: ChatI
             disabled={isLoading}
             rows={1}
             className={clsx(
-              'w-full resize-none rounded-xl border bg-surface py-3 pl-4 pr-14 text-sm transition-colors',
-              'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
-              'disabled:cursor-not-allowed disabled:opacity-50',
-              isOverLimit ? 'border-red-500' : 'border-border'
+              'flex-1 resize-none bg-transparent py-3 text-sm outline-none',
+              'placeholder:text-gray-400',
+              'disabled:cursor-not-allowed disabled:opacity-50'
             )}
             style={{ maxHeight: '200px' }}
             aria-invalid={isOverLimit || undefined}
@@ -70,7 +75,6 @@ export function ChatInput({ onSend, onStop, isLoading, maxLength = 4000 }: ChatI
               size="sm"
               variant="secondary"
               onClick={onStop}
-              className="absolute bottom-2 right-2"
               aria-label={t('chat.stop')}
             >
               <StopIcon className="h-4 w-4" aria-hidden="true" />
@@ -80,7 +84,6 @@ export function ChatInput({ onSend, onStop, isLoading, maxLength = 4000 }: ChatI
               type="submit"
               size="sm"
               disabled={!canSubmit}
-              className="absolute bottom-2 right-2"
               aria-label={t('chat.send')}
             >
               <PaperAirplaneIcon className="h-4 w-4" aria-hidden="true" />
