@@ -1,0 +1,32 @@
+{
+  "header": {
+    "title": "TalkBox",
+    "newChat": "New Chat",
+    "toggleSidebar": "Toggle sidebar",
+    "changeLanguage": "Change language"
+  },
+  "sidebar": {
+    "conversations": "Conversations",
+    "noConversations": "No conversations yet",
+    "deleteConversation": "Delete conversation"
+  },
+  "chat": {
+    "area": "Chat area",
+    "messageList": "Messages",
+    "welcome": "Welcome to TalkBox",
+    "welcomeSubtitle": "Start a conversation by typing a message below",
+    "placeholder": "Type a message...",
+    "send": "Send",
+    "loading": "Thinking...",
+    "characterLimit": "{{current}}/{{max}} characters",
+    "userMessage": "Your message",
+    "assistantMessage": "Assistant message"
+  },
+  "common": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "error": "An error occurred",
+    "skipToContent": "Skip to content"
+  }
+}

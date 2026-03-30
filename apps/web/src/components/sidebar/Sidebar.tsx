@@ -1,0 +1,107 @@
+import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Transition } from '@headlessui/react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
+import { clsx } from 'clsx';
+import { useConversationsStore } from '@/stores/conversations';
+import { useChatStore } from '@/stores/chat';
+import { ConversationItem } from './ConversationItem';
+
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelectConversation?: () => void;
+}
+
+export function Sidebar({ isOpen, onClose, onSelectConversation }: SidebarProps) {
+  const { t } = useTranslation();
+  const {
+    conversations,
+    currentId,
+    fetchConversations,
+    selectConversation,
+    deleteConversation,
+  } = useConversationsStore();
+  const { clearMessages } = useChatStore();
+
+  useEffect(() => {
+    fetchConversations();
+  }, [fetchConversations]);
+
+  const handleSelect = (id: string) => {
+    selectConversation(id);
+    onSelectConversation?.();
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteConversation(id);
+    if (currentId === id) {
+      clearMessages();
+    }
+  };
+
+  return (
+    <>
+      {/* Mobile backdrop */}
+      <Transition
+        show={isOpen}
+        enter="transition-opacity duration-200"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="transition-opacity duration-150"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+      >
+        <div
+          className="fixed inset-0 z-30 bg-black/20 lg:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      </Transition>
+
+      {/* Sidebar */}
+      <aside
+        className={clsx(
+          'fixed inset-y-0 left-0 z-40 flex w-sidebar flex-col border-r border-border bg-surface-secondary transition-transform duration-200 lg:static lg:translate-x-0',
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+        role="navigation"
+        aria-label={t('sidebar.conversations')}
+      >
+        {/* Mobile header */}
+        <div className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4 lg:hidden">
+          <span className="font-medium text-gray-900">{t('sidebar.conversations')}</span>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+            aria-label={t('common.close')}
+          >
+            <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </div>
+
+        {/* Conversation list */}
+        <nav className="flex-1 overflow-y-auto p-2 scrollbar-thin">
+          {conversations.length === 0 ? (
+            <p className="px-3 py-8 text-center text-sm text-gray-500">
+              {t('sidebar.noConversations')}
+            </p>
+          ) : (
+            <ul role="list" className="space-y-1">
+              {conversations.map((conversation) => (
+                <li key={conversation.id}>
+                  <ConversationItem
+                    conversation={conversation}
+                    isActive={conversation.id === currentId}
+                    onSelect={() => handleSelect(conversation.id)}
+                    onDelete={() => handleDelete(conversation.id)}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+        </nav>
+      </aside>
+    </>
+  );
+}

@@ -1,0 +1,32 @@
+{
+  "header": {
+    "title": "TalkBox",
+    "newChat": "新しいチャット",
+    "toggleSidebar": "サイドバーを切り替え",
+    "changeLanguage": "言語を変更"
+  },
+  "sidebar": {
+    "conversations": "会話一覧",
+    "noConversations": "会話がありません",
+    "deleteConversation": "会話を削除"
+  },
+  "chat": {
+    "area": "チャットエリア",
+    "messageList": "メッセージ一覧",
+    "welcome": "TalkBoxへようこそ",
+    "welcomeSubtitle": "下にメッセージを入力して会話を始めましょう",
+    "placeholder": "メッセージを入力...",
+    "send": "送信",
+    "loading": "考え中...",
+    "characterLimit": "{{current}}/{{max}}文字",
+    "userMessage": "あなたのメッセージ",
+    "assistantMessage": "アシスタントのメッセージ"
+  },
+  "common": {
+    "close": "閉じる",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "error": "エラーが発生しました",
+    "skipToContent": "メインコンテンツへスキップ"
+  }
+}
