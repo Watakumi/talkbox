@@ -52,7 +52,7 @@ export interface ConversationsResponse {
 }
 
 // SSE Events
-export type ChatEventType = 'start' | 'chunk' | 'done' | 'error';
+export type ChatEventType = 'start' | 'chunk' | 'tool_call' | 'tool_result' | 'done' | 'error';
 
 export interface ChatStartEvent {
   type: 'start';
@@ -64,6 +64,20 @@ export interface ChatChunkEvent {
   content: string;
 }
 
+export interface ChatToolCallEvent {
+  type: 'tool_call';
+  toolName: string;
+  toolCallId: string;
+  arguments: Record<string, unknown>;
+}
+
+export interface ChatToolResultEvent {
+  type: 'tool_result';
+  toolCallId: string;
+  result: string;
+  isError?: boolean;
+}
+
 export interface ChatDoneEvent {
   type: 'done';
 }
@@ -73,7 +87,13 @@ export interface ChatErrorEvent {
   message: string;
 }
 
-export type ChatEvent = ChatStartEvent | ChatChunkEvent | ChatDoneEvent | ChatErrorEvent;
+export type ChatEvent =
+  | ChatStartEvent
+  | ChatChunkEvent
+  | ChatToolCallEvent
+  | ChatToolResultEvent
+  | ChatDoneEvent
+  | ChatErrorEvent;
 
 // API Error
 export interface ApiError {

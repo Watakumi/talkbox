@@ -7,6 +7,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { conversationsRoutes } from './routes/conversations.js';
 import { chatRoutes } from './routes/chat.js';
+import { mcpRoutes } from './routes/mcp.js';
 import { authMiddleware } from './middleware/auth.js';
 import type { Env } from './types/env.js';
 
@@ -30,6 +31,7 @@ const api = new Hono<Env>();
 api.use('*', authMiddleware);
 api.route('/conversations', conversationsRoutes);
 api.route('/chat', chatRoutes);
+api.route('/mcp', mcpRoutes);
 
 app.route('/api/v1', api);
 

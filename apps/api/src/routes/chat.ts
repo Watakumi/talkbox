@@ -5,22 +5,28 @@ import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { getDb, conversations, messages } from '../db/index.js';
 import { createLLMProvider } from '../services/llm/index.js';
+import { getMCPManager } from './mcp.js';
 import type { Env } from '../types/env.js';
 import type { ChatEvent } from '@talkbox/shared';
+import type { LLMTool, LLMToolResult, LLMToolCall } from '../services/llm/types.js';
 
 const chatSchema = z.object({
   conversationId: z.string().uuid(),
   message: z.string().min(1).max(10000),
   systemPrompt: z.string().max(5000).optional(),
   model: z.enum(['gemini', 'openai', 'anthropic']).optional(),
+  useMcpTools: z.boolean().optional(),
 });
+
+const MAX_TOOL_ITERATIONS = 10;
 
 export const chatRoutes = new Hono<Env>().post(
   '/',
   zValidator('json', chatSchema),
   async (c) => {
     const user = c.get('user');
-    const { conversationId, message, systemPrompt, model } = c.req.valid('json');
+    const { conversationId, message, systemPrompt, model, useMcpTools } =
+      c.req.valid('json');
     const db = await getDb();
 
     // 会話の所有者確認
@@ -55,6 +61,15 @@ export const chatRoutes = new Hono<Env>().post(
       content: msg.content,
     }));
 
+    // MCPツールを取得
+    const mcpManager = getMCPManager();
+    const mcpTools = useMcpTools ? mcpManager.getAllTools() : [];
+    const tools: LLMTool[] = mcpTools.map((t) => ({
+      name: t.name,
+      description: t.description,
+      inputSchema: t.inputSchema as LLMTool['inputSchema'],
+    }));
+
     return streamSSE(c, async (stream) => {
       const assistantMessageId = crypto.randomUUID();
 
@@ -63,21 +78,99 @@ export const chatRoutes = new Hono<Env>().post(
 
       const llm = createLLMProvider(model || 'gemini');
       let fullContent = '';
+      let toolResults: LLMToolResult[] = [];
+      let iterations = 0;
 
       try {
-        for await (const chunk of llm.chat(llmMessages, { systemPrompt })) {
-          fullContent += chunk;
-          const chunkEvent: ChatEvent = { type: 'chunk', content: chunk };
-          await stream.writeSSE({ data: JSON.stringify(chunkEvent) });
+        while (iterations < MAX_TOOL_ITERATIONS) {
+          iterations++;
+          const pendingToolCalls: LLMToolCall[] = [];
+          let stopReason: 'end_turn' | 'tool_use' = 'end_turn';
+
+          for await (const event of llm.chat(llmMessages, {
+            systemPrompt,
+            tools: tools.length > 0 ? tools : undefined,
+            toolResults: toolResults.length > 0 ? toolResults : undefined,
+          })) {
+            if (event.type === 'text') {
+              fullContent += event.content;
+              const chunkEvent: ChatEvent = { type: 'chunk', content: event.content };
+              await stream.writeSSE({ data: JSON.stringify(chunkEvent) });
+            }
+
+            if (event.type === 'tool_call') {
+              pendingToolCalls.push(event.toolCall);
+              const toolCallEvent: ChatEvent = {
+                type: 'tool_call',
+                toolName: event.toolCall.name,
+                toolCallId: event.toolCall.id,
+                arguments: event.toolCall.arguments,
+              };
+              await stream.writeSSE({ data: JSON.stringify(toolCallEvent) });
+            }
+
+            if (event.type === 'done') {
+              stopReason = event.stopReason;
+            }
+          }
+
+          // ツール呼び出しがなければ終了
+          if (stopReason === 'end_turn' || pendingToolCalls.length === 0) {
+            break;
+          }
+
+          // ツールを実行
+          toolResults = [];
+          for (const tc of pendingToolCalls) {
+            try {
+              const result = await mcpManager.callTool(tc.name, tc.arguments);
+              const resultText =
+                result.content
+                  ?.map((c) => ('text' in c ? c.text : JSON.stringify(c)))
+                  .join('\n') || '';
+
+              toolResults.push({
+                toolCallId: tc.id,
+                content: resultText,
+                isError: result.isError,
+              });
+
+              const toolResultEvent: ChatEvent = {
+                type: 'tool_result',
+                toolCallId: tc.id,
+                result: resultText,
+                isError: result.isError,
+              };
+              await stream.writeSSE({ data: JSON.stringify(toolResultEvent) });
+            } catch (error) {
+              const errorMessage =
+                error instanceof Error ? error.message : 'Tool execution failed';
+              toolResults.push({
+                toolCallId: tc.id,
+                content: errorMessage,
+                isError: true,
+              });
+
+              const toolResultEvent: ChatEvent = {
+                type: 'tool_result',
+                toolCallId: tc.id,
+                result: errorMessage,
+                isError: true,
+              };
+              await stream.writeSSE({ data: JSON.stringify(toolResultEvent) });
+            }
+          }
         }
 
         // アシスタントメッセージを保存
-        await db.insert(messages).values({
-          id: assistantMessageId,
-          conversationId,
-          role: 'assistant',
-          content: fullContent,
-        });
+        if (fullContent) {
+          await db.insert(messages).values({
+            id: assistantMessageId,
+            conversationId,
+            role: 'assistant',
+            content: fullContent,
+          });
+        }
 
         // 会話のupdatedAtを更新
         await db
@@ -88,10 +181,8 @@ export const chatRoutes = new Hono<Env>().post(
         const doneEvent: ChatEvent = { type: 'done' };
         await stream.writeSSE({ data: JSON.stringify(doneEvent) });
       } catch (error) {
-        // Log detailed error server-side only
         console.error('LLM stream error:', error);
 
-        // Return safe error message to client (never expose internal details)
         const errorEvent: ChatEvent = {
           type: 'error',
           message: 'An error occurred while generating a response. Please try again.',
